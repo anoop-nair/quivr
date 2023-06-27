@@ -6,11 +6,12 @@ from models.users import User
 from utils.common import CommonsDep
 from utils.file import convert_bytes, get_file_size
 from utils.processors import filter_file
+from datastores.datastore_factory import get_datastore_client
 
 upload_router = APIRouter()
 
-def get_user_vectors(commons, user):
-    user_vectors_response = commons['supabase'].table("vectors").select(
+def get_user_vectors(user):
+    user_vectors_response = get_datastore_client().table("vectors").select(
         "name:metadata->>file_name, size:metadata->>file_size", count="exact") \
             .filter("user_id", "eq", user.email)\
             .execute()
@@ -40,7 +41,7 @@ async def upload_file(request: Request, commons: CommonsDep,  file: UploadFile, 
     max_brain_size = os.getenv("MAX_BRAIN_SIZE")
     max_brain_size_with_own_key = os.getenv("MAX_BRAIN_SIZE_WITH_KEY", 209715200)
     
-    user_unique_vectors = get_user_vectors(commons, current_user)
+    user_unique_vectors = get_user_vectors(current_user)
     current_brain_size = sum(float(doc['size']) for doc in user_unique_vectors)
 
     remaining_free_space = calculate_remaining_space(request, max_brain_size, max_brain_size_with_own_key, current_brain_size)

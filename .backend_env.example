@@ -8,3 +8,5 @@ GOOGLE_APPLICATION_CREDENTIALS=/code/application_default_credentials.json
 GOOGLE_CLOUD_PROJECT=XXXXX to  be changed with your GCP id
 MAX_BRAIN_SIZE=52428800
 MAX_REQUESTS_NUMBER=200
+DATASTORE_TYPE=XXXXX
+PGVECTOR_CONNECTION_STRING=postgresql+psycopg2://user:pass@localhost:5432/mydatabase

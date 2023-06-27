@@ -10,14 +10,15 @@ from parsers.github import process_github
 from utils.common import CommonsDep
 from utils.file import convert_bytes
 from utils.processors import filter_file
+from datastores.datastore_factory import get_datastore_client
 
 crawl_router = APIRouter()
 
-def get_unique_user_data(commons, user):
+def get_unique_user_data(user):
     """
     Retrieve unique user data vectors.
     """
-    user_vectors_response = commons['supabase'].table("vectors").select(
+    user_vectors_response = get_datastore_client().table("vectors").select(
         "name:metadata->>file_name, size:metadata->>file_size", count="exact") \
             .filter("user_id", "eq", user.email)\
             .execute()
@@ -57,4 +58,4 @@ async def crawl_endpoint(request: Request,commons: CommonsDep, crawl_website: Cr
             message = await filter_file(commons, file, enable_summarization, user=current_user, openai_api_key=request.headers.get('Openai-Api-Key', None))
             return message
         else:
-            message = await process_github(commons,crawl_website.url, "false", user=current_user, supabase=commons['supabase'], user_openai_api_key=request.headers.get('Openai-Api-Key', None))
+            message = await process_github(commons,crawl_website.url, "false", user=current_user, user_openai_api_key=request.headers.get('Openai-Api-Key', None))

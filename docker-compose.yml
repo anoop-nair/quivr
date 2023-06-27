@@ -24,3 +24,5 @@ services:
       - ~/.config/gcloud:/root/.config/gcloud
     ports:
       - 5050:5050
+    extra_hosts:
+      - "dockerhost:10.41.70.204"

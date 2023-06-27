@@ -7,6 +7,7 @@ from models.chats import ChatMessage
 from models.settings import BrainSettings
 from pydantic import BaseModel
 from utils.common import CommonsDep
+from datastores.datastore_factory import get_datastore_client, get_documents_vectorstore, get_summaries_vectorstore
 
 logger = get_logger(__name__)
 
@@ -19,11 +20,11 @@ class Neurons(BaseModel):
         logger.info(f"Creating vector for document")
         logger.info(f"Document: {doc}")
         if user_openai_api_key:
-            self.commons['documents_vector_store']._embedding = OpenAIEmbeddings(openai_api_key=user_openai_api_key)
+            get_documents_vectorstore()._embedding = OpenAIEmbeddings(openai_api_key=user_openai_api_key)
         try:
-            sids = self.commons['documents_vector_store'].add_documents([doc])
+            sids = get_documents_vectorstore().add_documents([doc])
             if sids and len(sids) > 0:
-                self.commons['supabase'].table("vectors").update({"user_id": user_id}).match({"id": sids[0]}).execute()
+                get_datastore_client().table("vectors").update({"user_id": user_id}).match({"id": sids[0]}).execute()
         except Exception as e:
             logger.error(f"Error creating vector for document {e}")
 
@@ -32,7 +33,7 @@ class Neurons(BaseModel):
 
     def similarity_search(self, query, table='match_summaries', top_k=5, threshold=0.5):
         query_embedding = self.create_embedding(query)
-        summaries = self.commons['supabase'].rpc(
+        summaries = get_datastore_client().rpc(
             table, {'query_embedding': query_embedding,
                     'match_count': top_k, 'match_threshold': threshold}
         ).execute()
@@ -46,10 +47,10 @@ def create_summary(commons: CommonsDep, document_id, content, metadata):
     metadata['document_id'] = document_id
     summary_doc_with_metadata = Document(
         page_content=summary, metadata=metadata)
-    sids = commons['summaries_vector_store'].add_documents(
+    sids = get_summaries_vectorstore().add_documents(
         [summary_doc_with_metadata])
     if sids and len(sids) > 0:
-        commons['supabase'].table("summaries").update(
+        get_datastore_client().table("summaries").update(
             {"document_id": document_id}).match({"id": sids[0]}).execute()
 
 
@@ -64,7 +65,7 @@ def get_answer(commons: CommonsDep, chat_message: ChatMessage, email: str, user_
         evaluations = llm_evaluate_summaries(
             chat_message.question, summaries, chat_message.model)
         if evaluations:
-            response = commons['supabase'].from_('vectors').select(
+            response = get_datastore_client().from_('vectors').select(
                 '*').in_('id', values=[e['document_id'] for e in evaluations]).execute()
             additional_context = '---\nAdditional Context={}'.format(
                 '---\n'.join(data['content'] for data in response.data)

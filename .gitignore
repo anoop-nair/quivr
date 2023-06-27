@@ -51,3 +51,7 @@ streamlit-demo/.streamlit/secrets.toml
 backend/pandoc-*
 **/.pandoc-*
 backend/application_default_credentials.json
+
+# IDEs
+.idea
+.vscode

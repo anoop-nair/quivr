@@ -1,5 +1,6 @@
 import os
 
+import uvicorn
 import pypandoc
 from fastapi import FastAPI
 from logger import get_logger
@@ -31,3 +32,7 @@ app.include_router(misc_router)
 app.include_router(upload_router)
 app.include_router(user_router)
 app.include_router(api_key_router)
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=5050)

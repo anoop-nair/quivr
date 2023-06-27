@@ -10,7 +10,7 @@ from utils.file import compute_sha1_from_content
 from utils.vectors import Neurons
 
 
-async def process_github(commons: CommonsDep, repo, enable_summarization, user, supabase, user_openai_api_key): 
+async def process_github(commons: CommonsDep, repo, enable_summarization, user, user_openai_api_key):
     random_dir_name = os.urandom(16).hex()
     dateshort = time.strftime("%Y%m%d")
     loader = GitLoader(
@@ -42,7 +42,7 @@ async def process_github(commons: CommonsDep, repo, enable_summarization, user, 
         }
         doc_with_metadata = Document(
             page_content=doc.page_content, metadata=metadata)
-        exist = await file_already_exists_from_content(supabase, doc.page_content.encode("utf-8"), user)
+        exist = await file_already_exists_from_content(doc.page_content.encode("utf-8"), user)
         if not exist:
             neurons =  Neurons(commons=commons)
             neurons.create_vector(user.email, doc_with_metadata, user_openai_api_key)

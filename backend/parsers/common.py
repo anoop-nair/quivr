@@ -11,6 +11,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from utils.common import CommonsDep
 from utils.file import compute_sha1_from_content, compute_sha1_from_file
 from utils.vectors import Neurons, create_summary
+from datastores.datastore_factory import get_datastore_client
 
 
 async def process_file(commons: CommonsDep, file: UploadFile, loader_class, file_suffix, enable_summarization, user, user_openai_api_key):
@@ -62,17 +63,17 @@ async def process_file(commons: CommonsDep, file: UploadFile, loader_class, file
     return
 
 
-async def file_already_exists(supabase, file, user):
+async def file_already_exists(file, user):
     # TODO: user brain id instead of user
     file_content = await file.read()
     file_sha1 = compute_sha1_from_content(file_content)
-    response = supabase.table("vectors").select("id").filter("metadata->>file_sha1", "eq", file_sha1) \
+    response = get_datastore_client().table("vectors").select("id").filter("metadata->>file_sha1", "eq", file_sha1) \
         .filter("user_id", "eq", user.email).execute()
     return len(response.data) > 0
 
-async def file_already_exists_from_content(supabase, file_content, user):
+async def file_already_exists_from_content(file_content, user):
      # TODO: user brain id instead of user
     file_sha1 = compute_sha1_from_content(file_content)
-    response = supabase.table("vectors").select("id").filter("metadata->>file_sha1", "eq", file_sha1) \
+    response = get_datastore_client().table("vectors").select("id").filter("metadata->>file_sha1", "eq", file_sha1) \
         .filter("user_id", "eq", user.email).execute()
     return len(response.data) > 0

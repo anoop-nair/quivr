@@ -14,6 +14,8 @@ anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
 supabase_url = os.environ.get("SUPABASE_URL")
 supabase_key = os.environ.get("SUPABASE_SERVICE_KEY")
 
+postgres_connection_string = os.environ.get("PGVECTOR_CONNECTION_STRING")
+
 embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 supabase_client: Client = create_client(supabase_url, supabase_key)
 documents_vector_store = SupabaseVectorStore(
@@ -27,7 +29,8 @@ def common_dependencies():
         "supabase": supabase_client,
         "embeddings": embeddings,
         "documents_vector_store": documents_vector_store,
-        "summaries_vector_store": summaries_vector_store
+        "summaries_vector_store": summaries_vector_store,
+        "postgres_connection_string": postgres_connection_string
     }
 
 

@@ -1,11 +1,12 @@
 from logger import get_logger
 from models.chats import ChatMessage
 from utils.common import CommonsDep
+from datastores.datastore_factory import get_datastore_client
 
 logger = get_logger(__name__)
 
 
-def create_chat(commons: CommonsDep, user_id, history, chat_name):
+def create_chat(user_id, history, chat_name):
     # Chat is created upon the user's first question asked
     logger.info(f"New chat entry in chats table for user {user_id}")
     
@@ -15,16 +16,16 @@ def create_chat(commons: CommonsDep, user_id, history, chat_name):
         "history": history, # Empty chat to start
         "chat_name": chat_name
     }
-    insert_response = commons['supabase'].table('chats').insert(new_chat).execute()
+    insert_response = get_datastore_client().table('chats').insert(new_chat).execute()
     logger.info(f"Insert response {insert_response.data}")
 
     return(insert_response)
 
-def update_chat(commons: CommonsDep, chat_id, history):
+def update_chat(chat_id, history):
     if not chat_id:
         logger.error("No chat_id provided")
         return
-    commons['supabase'].table("chats").update(
+    get_datastore_client().table("chats").update(
         { "history": history}).match({"chat_id": chat_id}).execute()
     logger.info(f"Chat {chat_id} updated")
     

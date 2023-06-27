@@ -43,7 +43,7 @@ file_processors = {
 
 
 async def filter_file(commons: CommonsDep, file: UploadFile, enable_summarization: bool, user: User, openai_api_key):
-    if await file_already_exists(commons['supabase'], file, user):
+    if await file_already_exists(file, user):
         return {"message": f"🤔 {file.filename} already exists.", "type": "warning"}
     elif file.file._file.tell()  < 1:
         return {"message": f"❌ {file.filename} is empty.", "type": "error"}
